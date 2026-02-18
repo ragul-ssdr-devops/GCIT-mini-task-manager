@@ -58,11 +58,17 @@
         tasks.forEach((task) => {
           const li = document.createElement("li");
 
+          //   li.innerHTML = `
+          //     <b>${task.title}</b> - ${task.status}
+          //     <button onclick="updateStatus('${task.id}', 'completed')">Complete</button>
+          //     <button onclick="deleteTask('${task.id}')">Delete</button>
+          // `;
           li.innerHTML = `
-            <b>${task.title}</b> - ${task.status}
-            <button onclick="updateStatus('${task.id}', 'completed')">Complete</button>
-            <button onclick="deleteTask('${task.id}')">Delete</button>
-        `;
+    <b>${task.title}</b> - ${task.status}
+    <button onclick="updateStatus('${task.id}', 'completed')">Complete</button>
+    <button onclick="editTask('${task.id}', '${task.title}', '${task.description}')">Edit</button>
+    <button onclick="deleteTask('${task.id}')">Delete</button>
+`;
 
           list.appendChild(li);
         });
@@ -81,6 +87,26 @@
       async function deleteTask(id) {
         await fetch("/tasks/" + id, {
           method: "DELETE",
+        });
+
+        loadTasks();
+      }
+      async function editTask(id, oldTitle, oldDescription) {
+        const newTitle = prompt("Edit title:", oldTitle);
+        const newDescription = prompt("Edit description:", oldDescription);
+
+        if (!newTitle) {
+          alert("Title cannot be empty");
+          return;
+        }
+
+        await fetch("/tasks/" + id, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: newTitle,
+            description: newDescription,
+          }),
         });
 
         loadTasks();

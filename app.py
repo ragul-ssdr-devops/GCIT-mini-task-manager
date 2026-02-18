@@ -25,7 +25,8 @@ def create_task():
         "title": data["title"],
         "description": data.get("description", ""),
         "status": "pending",
-        "created_at": datetime.utcnow().isoformat()
+        "created_at": datetime.now().astimezone().isoformat()
+
     }
 
     tasks.append(task)
@@ -79,4 +80,4 @@ def delete_task(task_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
