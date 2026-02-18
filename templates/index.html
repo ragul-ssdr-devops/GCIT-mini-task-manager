@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Mini Task Manager</title>
+  </head>
+  <body>
+    <h2>Create Task</h2>
+    <input id="title" placeholder="Title" />
+    <input id="desc" placeholder="Description" />
+    <button onclick="createTask()">Add Task</button>
+
+    <h2>Tasks</h2>
+
+    <select id="filter" onchange="loadTasks()">
+      <option value="">All</option>
+      <option value="pending">Pending</option>
+      <option value="in-progress">In Progress</option>
+      <option value="completed">Completed</option>
+    </select>
+
+    <ul id="taskList"></ul>
+
+    <script>
+      async function createTask() {
+        const title = document.getElementById("title").value;
+        const description = document.getElementById("desc").value;
+
+        if (!title) {
+          alert("Title required");
+          return;
+        }
+
+        await fetch("/tasks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, description }),
+        });
+
+        document.getElementById("title").value = "";
+        document.getElementById("desc").value = "";
+
+        loadTasks();
+      }
+
+      async function loadTasks() {
+        const status = document.getElementById("filter").value;
+        let url = "/tasks";
+        if (status) {
+          url += "?status=" + status;
+        }
+
+        const response = await fetch(url);
+        const tasks = await response.json();
+
+        const list = document.getElementById("taskList");
+        list.innerHTML = "";
+
+        tasks.forEach((task) => {
+          const li = document.createElement("li");
+
+          li.innerHTML = `
+            <b>${task.title}</b> - ${task.status}
+            <button onclick="updateStatus('${task.id}', 'completed')">Complete</button>
+            <button onclick="deleteTask('${task.id}')">Delete</button>
+        `;
+
+          list.appendChild(li);
+        });
+      }
+
+      async function updateStatus(id, status) {
+        await fetch("/tasks/" + id, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+        });
+
+        loadTasks();
+      }
+
+      async function deleteTask(id) {
+        await fetch("/tasks/" + id, {
+          method: "DELETE",
+        });
+
+        loadTasks();
+      }
+
+      loadTasks();
+    </script>
+  </body>
+</html>
